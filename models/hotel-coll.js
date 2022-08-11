@@ -13,9 +13,7 @@ const HotelSchema = new Schema({
     numberBathRoom: String,
     numberBed: String,
     numberPeople: String,
-
     detailRoom: String,
-
     priceMon_Fri: String,
     priceWeb_Sun: String,
     priceDiscount: String,
@@ -30,12 +28,6 @@ const HotelSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    /* user : [
-        { 
-        type: Schema.Types.ObjectId,
-        ref : 'user'
-        }
-    ], */
 });
 
 const Hotel = mongoose.model('hotel', HotelSchema);

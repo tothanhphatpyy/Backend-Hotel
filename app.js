@@ -4,8 +4,8 @@ const bodyParser        = require('body-parser');
 const mongoose          = require('mongoose');
 const cors              = require('cors');
 const cookieParser      = require('cookie-parser');
-const { hash, compare, genSalt } = require('bcryptjs');
-const { sign, verify } = require('jsonwebtoken');
+const { hash, compare } = require('bcryptjs');
+const {sign}               = require('jsonwebtoken');
 const uri               = 'mongodb://localhost:27017/BookingHotel';
 const { Hotel }         = require('./models/hotel-coll');
 const { Location }      = require('./models/location-coll.js');
@@ -21,11 +21,12 @@ app.get('/', (req, res) => {
 })
 
 
+
+
 //Thêm địa danh
 app.post('/add-location', async (req, res) => {
     try {
         let { name, image } = req.body;
-        console.log({ name, image });
         let newLocation = new Location({ name, image });
         let locationAfterSave = await newLocation.save();
         if(locationAfterSave){
@@ -42,14 +43,12 @@ app.post('/add-location', async (req, res) => {
 app.get('/location', async (req, res) => {
     let listLocation = await Location.find();
     let result = listLocation.map(item => item.name)
-    console.log({ result });
     res.json(listLocation);
 })
 
 //Xóa địa danh
 app.get('/delete-location/:locationID', async (req, res) => {
     let { locationID } = req.params;
-    console.log({ locationID });
     let locationRemove = await Location.findByIdAndDelete({ _id: locationID });
     res.json({message: 'Xóa thành công', locationRemove: locationRemove});
 })
@@ -60,7 +59,6 @@ app.post('/add-hotel', async (req, res) => {
     try {
       let { location, user, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
             numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules  } = req.body;
-      console.log({ nameRoom, location }, );
       let newHotel = new Hotel({ location, user, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
                                  numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules });
       let hotelAfterSave = await newHotel.save();
@@ -74,7 +72,6 @@ app.post('/add-hotel', async (req, res) => {
 //Lấy danh sách hotel
 app.get('/list-hotel', async (req, res) => {
     let { hotelID} = req.query;
-    console.log({ hotelID});
     let listHotel;
     
     if(hotelID){
@@ -82,8 +79,6 @@ app.get('/list-hotel', async (req, res) => {
     }else{
         listHotel = await Hotel.find();
     }
-
-    console.log({ listHotel });
 
     res.json(listHotel);
 })
@@ -93,7 +88,6 @@ app.get('/list-hotel', async (req, res) => {
 //Lấy danh sách hotel theo địa danh
 app.get('/list-hotel/:locationID', async (req, res) => {
     let { locationID } = req.params;
-    console.log({ locationID });
     let listHotel = await Hotel.find({ location: locationID });
     res.json(listHotel);
 })
@@ -102,7 +96,6 @@ app.get('/list-hotel/:locationID', async (req, res) => {
 app.post('/update-hotel/:hotelID', async (req, res) => {
     try {
         let { hotelID } = req.params;
-        console.log({hotelID});
         let {nameRoom, img, detailRoom, detailLocation, priceMon_Fri, priceDiscount, detailRules} = req.body;
         let updateHotel = await Hotel.findByIdAndUpdate( hotelID, {nameRoom, img, detailRoom, detailLocation, priceDiscount, priceMon_Fri, detailRules}, {new : true});
         res.json(updateHotel);
@@ -114,7 +107,6 @@ app.post('/update-hotel/:hotelID', async (req, res) => {
 //Xóa hotel
 app.get('/delete-hotel/:hotelID', async (req, res) => {
     let { hotelID } = req.params;
-    console.log({ hotelID });
     let hotelRemove = await Hotel.findByIdAndDelete({ _id: hotelID });
     res.json({message: 'Xóa thành công', hotelRemove: hotelRemove});
 })
@@ -126,12 +118,7 @@ app.post('/register', async( req, res) =>{
         //hashed password
         const hashedPassword = await hash(password, 8);
         //create a new user
-        const newUser = await new User({
-            username,
-            name,
-            email,
-            password: hashedPassword,
-        })
+        const newUser = await new User({ username, name, email, password: hashedPassword,})
         //save to database
         const userAfterSave = await newUser.save();
         res.json(userAfterSave)
@@ -143,21 +130,25 @@ app.post('/register', async( req, res) =>{
 
 // Đăng nhập user
  app.post('/login', async (req, res) => {
-    try {
+    let {username, password} = req.body;
+    const infoUser = await User.findOne({ username });
+    if (!infoUser)
+        return res.status(404).json({message: 'Tài khoản không tồn tại'});           
+    const checkPass = await compare(password, infoUser.password);
+    if (!checkPass)
+        return res.status(404).json({message: 'Sai mật khẩu'});
 
-        let {username, password} = req.body;
-        const user = await User.findOne({username})
-        
-        const validPassword = await compare( password, user.password )// return true or false
-        if(user && validPassword){
-            await delete user.password;
-            const accessToken = await sign({user});
-            res.json({user, accessToken})
-        }
-    } catch (error) {
-        res.status(400).json({message: 'Sai thong tin tai khoan hoac mat khau'});
+    if( infoUser && checkPass){
+        const accessToken = sign({ 
+            username: infoUser.username,
+            name: infoUser.name,
+            email: infoUser.email,  
+            role: infoUser.role,    
+        }, 'token');
+        const {password, ...other} = infoUser._doc;
+        return res.json({...other, accessToken});
     }
- })
+})
 
 // Lấy danh sách User
 app.get('/list-user', async (req, res) => {
@@ -173,19 +164,51 @@ app.get('/list-user', async (req, res) => {
     }
 })
 
-
-
-
-// Lấy danh sách hotel đã đặt từ Customer
-app.get('/list-hotel-customer/:userID', async (req, res) => {
+app.post('/search', async (req, res) => {
     try {
-       let { userID } = req.params;
-       let listHotelOfUser = await Hotel.find({user: userID})
-       res.json(listHotelOfUser);
-      } catch (error) {
-          res.status(400).json({ error: error.message })
-      }
-}) 
+        let { keyword } = req.body;
+        let listLocationByKeyword = await Location.find({ "name" : { $regex: keyword, $options: 'i' } });
+        listLocationByKeyword.map(item => {delete item.image; return item});
+
+        let listDetailLocationOfHotelByKeyWord = await Hotel.find({ "detailLocation" : { $regex: keyword, $options: 'i' } });
+        let listResultDetailLocation = listDetailLocationOfHotelByKeyWord.map(item => item.detailLocation);
+        listResultDetailLocation = Array.from(new Set(listResultDetailLocation));
+
+        let listHotelByKeyWord = await Hotel.find({ "nameRoom" : { $regex: keyword, $options: 'i' } }).limit(10);
+        let resultListHotel = [];
+        listHotelByKeyWord.map(item => {
+            var hotel = new Object();
+            hotel.id = item._id;
+            hotel.nameRoom = item.nameRoom;
+            resultListHotel.push(hotel);
+        });
+
+        //res.json(resultListHotel);
+        res.json({location : listLocationByKeyword, detailLocation: listResultDetailLocation, hotel: resultListHotel});
+
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
+
+const convertText = (str) => {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    return str;
+}
+
 
 
 mongoose.connect(uri);

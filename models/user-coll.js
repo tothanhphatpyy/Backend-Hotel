@@ -3,15 +3,11 @@ const Schema   = mongoose.Schema;
 
 const UserSchema = new Schema({
 
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-    },
+    username: { type: String, required: true, unique: true },
     password: String,
-
     name: String,
     email: String,
+    
      /**
      * 1. Admin
      * 0. User
