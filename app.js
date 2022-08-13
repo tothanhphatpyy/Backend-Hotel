@@ -215,7 +215,7 @@ const convertText = (str) => {
 mongoose.connect(uri);
 mongoose.connection.once('open', () => {
     console.log(`mongo client connected`)
-    app.listen(process.env.PORT, () => console.log(`server started at port 3000`));
+    app.listen(process.env.PORT || 3000, () => console.log(`server started at port 3000`));
 });
 
 
