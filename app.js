@@ -11,6 +11,7 @@ const uri               = 'mongodb+srv://tophat:phat123@cluster0.fe3z9.mongodb.n
 const { Hotel }         = require('./models/hotel-coll');
 const { Location }      = require('./models/location-coll.js');
 const { User }          = require('./models/user-coll');
+const { Oder}           = require('./models/oder-coll');
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -58,9 +59,9 @@ app.get('/delete-location/:locationID', async (req, res) => {
 //Thêm data hotel
 app.post('/add-hotel', async (req, res) => {
     try {
-      let { location, user, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
+      let { location, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
             numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules  } = req.body;
-      let newHotel = new Hotel({ location, user, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
+      let newHotel = new Hotel({ location, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
                                  numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules });
       let hotelAfterSave = await newHotel.save();
       res.json(hotelAfterSave)
@@ -70,7 +71,7 @@ app.post('/add-hotel', async (req, res) => {
    
 })
 
-//Lấy danh sách hotel
+//Lấy danh sách hotel, lấy theo id : '/list-hotel?hotelID=" " '
 app.get('/list-hotel', async (req, res) => {
     let { hotelID} = req.query;
     let listHotel;
@@ -165,6 +166,8 @@ app.get('/list-user', async (req, res) => {
     }
 })
 
+
+// Tìm kiếm địa danh và khách sạn theo keyword
 app.post('/search', async (req, res) => {
     try {
         let { keyword } = req.body;
@@ -192,25 +195,46 @@ app.post('/search', async (req, res) => {
     }
 })
 
-const convertText = (str) => {
-    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-    str = str.replace(/đ/g, "d");
-    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
-    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
-    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
-    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
-    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
-    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
-    str = str.replace(/Đ/g, "D");
-    return str;
-}
+//Thêm đơn đặt phòng
+app.post('/add-oder', async (req, res) => {
+    try {
+        let { titlePrice, dateOder, dateReturn, dateCreated, status_payment, status_confirm, hotel, user } = req.body;
+        let newOder = new Oder({ titlePrice, dateOder, dateReturn, dateCreated, status_payment, status_confirm, hotel, user });
+        let oderAfterSave = await newOder.save();
+        if(oderAfterSave){
+            res.json({message: 'Thêm thành công', data: oderAfterSave})
+        }else{
+            res.json({message: 'Thêm thất bại'})
+        }
+    } catch (e) {
+        res.json({error: e.message})
+    }
+})
+// lấy đơn đặt phòng, lấy theo ID_Oder : '/list-oder?oderID=" " '
+app.get('/list-oder', async (req, res) => {
+    try {
+        let { oderID } = req.query;
+        let listOder;
+        if(oderID){
+            listOder = await Oder.findById(oderID)
+        } else listOder = await Oder.find();
+        res.json(listOder);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
 
-
+//Lấy danh sách phòng đã đặt theo User
+app.get('/list-oder-by-user/:userID', async (req, res) => {
+    try {
+        let { userID } = req.params;
+        let listOder = await Oder.find({ user: userID });
+        res.json(listOder);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+    
+})
 
 mongoose.connect(uri);
 mongoose.connection.once('open', () => {
