@@ -198,8 +198,8 @@ app.post('/search', async (req, res) => {
 //Thêm đơn đặt phòng
 app.post('/add-oder', async (req, res) => {
     try {
-        let { titlePrice, dateOder, dateReturn, dateCreated, status_payment, status_confirm, hotel, user } = req.body;
-        let newOder = new Oder({ titlePrice, dateOder, dateReturn, dateCreated, status_payment, status_confirm, hotel, user });
+        let { totalPrice, dateOder, dateReturn, status_payment, status_confirm, hotel, user } = req.body;
+        let newOder = new Oder({ totalPrice, dateOder, dateReturn, status_payment, status_confirm, hotel, user });
         let oderAfterSave = await newOder.save();
         if(oderAfterSave){
             res.json({message: 'Thêm thành công', data: oderAfterSave})
