@@ -210,7 +210,7 @@ app.post('/add-oder', async (req, res) => {
         res.json({error: e.message})
     }
 })
-// lấy đơn đặt phòng, lấy theo ID_Oder : '/list-oder?oderID=" " '
+// lấy đơn đặt phòng, lấy theo ID_Oder : '/list-oder?oderID=" "
 app.get('/list-oder', async (req, res) => {
     try {
         let { oderID } = req.query;
