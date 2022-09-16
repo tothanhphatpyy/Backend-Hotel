@@ -12,6 +12,8 @@ const { Hotel }         = require('./models/hotel-coll');
 const { Location }      = require('./models/location-coll.js');
 const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
+const { Note }          = require('./models/note-coll'); 
+
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -24,7 +26,7 @@ app.get('/', (req, res) => {
 
 
 
-
+//---------------------------------------->LOCATION<------------------------------------
 //Thêm địa danh
 app.post('/add-location', async (req, res) => {
     try {
@@ -55,7 +57,7 @@ app.get('/delete-location/:locationID', async (req, res) => {
     res.json({message: 'Xóa thành công', locationRemove: locationRemove});
 })
 
-
+//---------------------------------------->HOTEL<------------------------------------
 //Thêm data hotel
 app.post('/add-hotel', async (req, res) => {
     try {
@@ -113,6 +115,8 @@ app.get('/delete-hotel/:hotelID', async (req, res) => {
     res.json({message: 'Xóa thành công', hotelRemove: hotelRemove});
 })
 
+
+//---------------------------------------->USER<------------------------------------
 // Đăng kí user
 app.post('/register', async( req, res) =>{
     try {
@@ -195,6 +199,8 @@ app.post('/search', async (req, res) => {
     }
 })
 
+
+//---------------------------------------->ODER<------------------------------------
 //Thêm đơn đặt phòng
 app.post('/add-oder', async (req, res) => {
     try {
@@ -233,7 +239,22 @@ app.get('/list-oder-by-user/:userID', async (req, res) => {
     } catch (error) {
         res.json({ error: error.message });
     }
-    
+})
+
+//---------------------------------------->STICKYNOTE<------------------------------------
+app.post('/add-note', async (req, res) => {
+    try {
+        let { title, detail } = req.body;
+        let newNote = new Note({ title, detail });
+        let noteAfterSave = await newNote.save();
+        if(noteAfterSave){
+            res.json({message: 'Thêm thành công', data: noteAfterSave})
+        }else{
+            res.json({message: 'Thêm thất bại'})
+        }
+    } catch (e) {
+        res.json({error: e.message})
+    }
 })
 
 mongoose.connect(uri);
