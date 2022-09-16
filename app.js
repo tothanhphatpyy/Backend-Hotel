@@ -12,7 +12,7 @@ const { Hotel }         = require('./models/hotel-coll');
 const { Location }      = require('./models/location-coll.js');
 const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
-const { Note }          = require('./models/note-coll'); 
+const { Note }          = require('./models/stickynote-coll'); 
 
 
 app.use(bodyParser.json());
@@ -242,6 +242,8 @@ app.get('/list-oder-by-user/:userID', async (req, res) => {
 })
 
 //---------------------------------------->STICKYNOTE<------------------------------------
+
+
 app.post('/add-note', async (req, res) => {
     try {
         let { title, detail } = req.body;
@@ -254,6 +256,19 @@ app.post('/add-note', async (req, res) => {
         }
     } catch (e) {
         res.json({error: e.message})
+    }
+})
+
+app.get('/list-note', async (req, res) => {
+    try {
+        let { noteID } = req.query;
+        let listNote;
+        if(noteID){
+            listNote = await Note.findById(noteID)
+        } else listNote = await Note.find();
+        res.json(listNote);
+    } catch (error) {
+        res.json({ error: error.message });
     }
 })
 
