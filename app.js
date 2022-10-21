@@ -14,6 +14,7 @@ const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
 const { Note }          = require('./models/stickynote-coll'); 
 
+var admin = require('./helper');
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -241,6 +242,17 @@ app.get('/list-oder-by-user/:userID', async (req, res) => {
     }
 })
 
+
+//Check tài khoản đã tồn tại chưa
+app.post('/check-user', async (req, res) => {
+    try {
+        let { username } = req.body;
+        let result = await User.findOne({ username });
+        res.json(result);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
 //---------------------------------------->STICKYNOTE<------------------------------------
 
 
@@ -271,6 +283,34 @@ app.get('/list-note', async (req, res) => {
         res.json({ error: error.message });
     }
 })
+
+app.get('/notification', async (req, res) => {
+    try {
+        const result = await admin.messaging().send({
+           notification: {
+            "title" : 'This is a title',
+            "body": 'This is a body',
+           },
+           "android": {
+            "notification": {
+                "sound": "default",
+            }
+           },
+           "apns": {
+            "payload" : {
+                "aps": {
+                    "sound" : "default",
+                }
+            }
+           },
+            token: 'dbuAEBcGTDGRyYq8PYlUjM:APA91bHfjnaQs_OoOun7UNQ4OHnGvakxTaz9flYMRdJMN5bVetjagB4nPZix0Pq4GOHs4BAntoHbz7lrTZ5VAaBC-4kxPFEFJ4zCR9-x4ouDBLWXeK-2WAIAvYPAeGa1Q0MM6rpryJOM'
+          });
+          res.json(result);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
+
 
 mongoose.connect(uri);
 mongoose.connection.once('open', () => {
