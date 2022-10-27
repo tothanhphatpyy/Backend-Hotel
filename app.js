@@ -172,33 +172,6 @@ app.get('/list-user', async (req, res) => {
 })
 
 
-// Tìm kiếm địa danh và khách sạn theo keyword
-app.post('/search', async (req, res) => {
-    try {
-        let { keyword } = req.body;
-        let listLocationByKeyword = await Location.find({ "name" : { $regex: keyword, $options: 'i' } });
-        listLocationByKeyword.map(item => {delete item.image; return item});
-
-        let listDetailLocationOfHotelByKeyWord = await Hotel.find({ "detailLocation" : { $regex: keyword, $options: 'i' } });
-        let listResultDetailLocation = listDetailLocationOfHotelByKeyWord.map(item => item.detailLocation);
-        listResultDetailLocation = Array.from(new Set(listResultDetailLocation));
-
-        let listHotelByKeyWord = await Hotel.find({ "nameRoom" : { $regex: keyword, $options: 'i' } }).limit(10);
-        let resultListHotel = [];
-        listHotelByKeyWord.map(item => {
-            var hotel = new Object();
-            hotel.id = item._id;
-            hotel.nameRoom = item.nameRoom;
-            resultListHotel.push(hotel);
-        });
-
-        //res.json(resultListHotel);
-        res.json({location : listLocationByKeyword, detailLocation: listResultDetailLocation, hotel: resultListHotel});
-
-    } catch (error) {
-        res.json({ error: error.message });
-    }
-})
 
 
 //---------------------------------------->ODER<------------------------------------
@@ -243,6 +216,64 @@ app.get('/list-oder-by-user/:userID', async (req, res) => {
 })
 
 
+// Tìm kiếm địa danh và khách sạn theo keyword
+app.post('/search', async (req, res) => {
+    try {
+        let { keyword } = req.body;
+        let listLocationByKeyword = await Location.find({ "name" : { $regex: keyword, $options: 'i' } });
+        listLocationByKeyword.map(item => {delete item.image; return item});
+
+        let listDetailLocationOfHotelByKeyWord = await Hotel.find({ "detailLocation" : { $regex: keyword, $options: 'i' } });
+        let listResultDetailLocation = listDetailLocationOfHotelByKeyWord.map(item => item.detailLocation);
+        listResultDetailLocation = Array.from(new Set(listResultDetailLocation));
+
+        let listHotelByKeyWord = await Hotel.find({ "nameRoom" : { $regex: keyword, $options: 'i' } }).limit(10);
+        let resultListHotel = [];
+        listHotelByKeyWord.map(item => {
+            var hotel = new Object();
+            hotel.id = item._id;
+            hotel.nameRoom = item.nameRoom;
+            resultListHotel.push(hotel);
+        });
+
+        //res.json(resultListHotel);
+        res.json({location : listLocationByKeyword, detailLocation: listResultDetailLocation, hotel: resultListHotel});
+
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
+
+
+
+
+app.get('/notification', async (req, res) => {
+    try {
+        const result = await admin.messaging().send({
+           notification: {
+            "title" : 'This is a title',
+            "body": 'This is a body',
+           },
+           "android": {
+            "notification": {
+                "sound": "default",
+            }
+           },
+           "apns": {
+            "payload" : {
+                "aps": {
+                    "sound" : "default",
+                }
+            }
+           },
+            token: 'dbuAEBcGTDGRyYq8PYlUjM:APA91bHfjnaQs_OoOun7UNQ4OHnGvakxTaz9flYMRdJMN5bVetjagB4nPZix0Pq4GOHs4BAntoHbz7lrTZ5VAaBC-4kxPFEFJ4zCR9-x4ouDBLWXeK-2WAIAvYPAeGa1Q0MM6rpryJOM'
+          });
+          res.json(result);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
+
 //Check tài khoản đã tồn tại chưa
 app.post('/check-user', async (req, res) => {
     try {
@@ -253,6 +284,26 @@ app.post('/check-user', async (req, res) => {
         res.json({ error: error.message });
     }
 })
+
+//Đặt lại password theo SDT
+app.post('/forgot-password', async (req, res) => {
+    try {
+        let { username, password } = req.body;
+        const hashedPassword = await hash(password, 8);
+        let result = await User.findOne({ username });
+        let newUserUpdate = await User.findByIdAndUpdate(result.id, {password: hashedPassword});
+        res.json(newUserUpdate);
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+})
+
+
+
+
+
+
+
 //---------------------------------------->STICKYNOTE<------------------------------------
 
 
@@ -284,32 +335,7 @@ app.get('/list-note', async (req, res) => {
     }
 })
 
-app.get('/notification', async (req, res) => {
-    try {
-        const result = await admin.messaging().send({
-           notification: {
-            "title" : 'This is a title',
-            "body": 'This is a body',
-           },
-           "android": {
-            "notification": {
-                "sound": "default",
-            }
-           },
-           "apns": {
-            "payload" : {
-                "aps": {
-                    "sound" : "default",
-                }
-            }
-           },
-            token: 'dbuAEBcGTDGRyYq8PYlUjM:APA91bHfjnaQs_OoOun7UNQ4OHnGvakxTaz9flYMRdJMN5bVetjagB4nPZix0Pq4GOHs4BAntoHbz7lrTZ5VAaBC-4kxPFEFJ4zCR9-x4ouDBLWXeK-2WAIAvYPAeGa1Q0MM6rpryJOM'
-          });
-          res.json(result);
-    } catch (error) {
-        res.json({ error: error.message });
-    }
-})
+
 
 
 mongoose.connect(uri);
