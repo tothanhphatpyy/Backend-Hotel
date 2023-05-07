@@ -12,6 +12,7 @@ const { Hotel }         = require('./models/hotel-coll');
 const { Location }      = require('./models/location-coll.js');
 const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
+const { RoomFavorite }   = require('./models/room-favorite-coll');
 const { Note }          = require('./models/stickynote-coll'); 
 
 var admin = require('./helper');
@@ -171,15 +172,48 @@ app.get('/list-user', async (req, res) => {
     }
 })
 
+// Thêm danh sách phòng yêu thích theo User
+app.post('/add-room-favorite', async (req, res) => {
+    try {
+        let { user, hotel } = req.body;
+        let newRoomFavorite = new RoomFavorite({ user, hotel});
+        let newRoomFavoriteAfterSave = await newRoomFavorite.save();
+        res.json(newRoomFavoriteAfterSave)
+    } catch (e) {
+        res.json({error: e.message})
+    }
+})
 
+// Lấy danh sách phòng yêu thích theo User
+app.get('/room-favorite-by-user', async (req, res) => {
+    try{
+        let { userID } = req.query;
+        let listFavorite = await RoomFavorite.find({user: userID})
+        let listHotelFavorite = [];
+        await Promise.all(listFavorite.map(async(item) => {
+            let hotelFavorite = await Hotel.findById(item.hotel);
+            listHotelFavorite.push(hotelFavorite)
+        }))
+        res.json(listHotelFavorite);
+    } catch (e) {
+        res.json({error: e.message})
+    }
+})
+
+// Xóa phòng yêu thích theo User
+app.post('/delete-room-favorite', async (req, res) => {
+    let { hotelID } = req.body;
+    let roomRemove = await RoomFavorite.findOneAndDelete({ hotel: hotelID });
+    res.json({message: 'Xóa thành công', roomRemove: roomRemove});
+})
 
 
 //---------------------------------------->ODER<------------------------------------
 //Thêm đơn đặt phòng
 app.post('/add-oder', async (req, res) => {
     try {
-        let { totalPrice, dateOder, dateReturn, status_payment, status_confirm, hotel, user } = req.body;
-        let newOder = new Oder({ totalPrice, dateOder, dateReturn, status_payment, status_confirm, hotel, user });
+        let { totalPrice, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user } = req.body;
+        let newOder = new Oder({ totalPrice, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user });
         let oderAfterSave = await newOder.save();
         if(oderAfterSave){
             res.json({message: 'Thêm thành công', data: oderAfterSave})
@@ -209,7 +243,13 @@ app.get('/list-oder-by-user/:userID', async (req, res) => {
     try {
         let { userID } = req.params;
         let listOder = await Oder.find({ user: userID });
-        res.json(listOder);
+        let listHotelOder = []; 
+        await Promise.all(listOder.map(async(item) => {
+            let hotelInfo = await Hotel.findById(item.hotel);
+            item.hotel = hotelInfo;
+            listHotelOder.push(item);
+        }))
+        res.json(listHotelOder);
     } catch (error) {
         res.json({ error: error.message });
     }
@@ -251,8 +291,8 @@ app.get('/notification', async (req, res) => {
     try {
         const result = await admin.messaging().send({
            notification: {
-            "title" : 'This is a title',
-            "body": 'This is a body',
+            "title" : 'Thong bao',
+            "body": 'Day la thong bao',
            },
            "android": {
             "notification": {

@@ -6,6 +6,8 @@ const OderSchema = new Schema({
     totalPrice: String,
     dateOder: Date,
     dateReturn: Date,
+    numberPeople: String,
+    numberChildren: String,
     
     /* Trạng thái thanh toán
     0. Chưa thanh toán
@@ -19,6 +21,12 @@ const OderSchema = new Schema({
     2. Từ chối */
 
     status_confirm : { type: Number, default: 0 },
+
+    /* Trạng thái chỗ ở
+    0. Chưa ở
+    1. Đang ở
+    2. Đã ở */
+    status_booking : { type: Number, default: 0 },
 
     hotel : {
         type: Schema.Types.ObjectId,
