@@ -3,19 +3,18 @@ const Schema   = mongoose.Schema;
 
 const UserSchema = new Schema({
 
-    username: { type: String, required: true, unique: true },
+    sdt: { type: String, required: true, unique: true },
     password: String,
     name: String,
     email: String,
-    
-     /**
-     * 1. Admin
-     * 0. User
-     */
-    role: { type: Number, default: 0 },
+    number_accommodation : { type: Number, default: 0 }, // Số chỗ ở
+    response_rate: { type: Number, default: 0 }, // Tỉ lệ phản hồi
+    cancellation_rate : { type: Number, default: 0 }, // Tỉ lệ hủy phòng
+
+    role: { type: Number, default: 1 },/* 0. Admin 1. User 2. Owner */
     
     //Trạng thái hoạt động
-    status: { type: Number, default: 1 },
+    status: { type: Number, default: 1 } /* 0. Inactive, 1. Active 2. Blocked */
 }, {timestamps: true});
 
 const User = mongoose.model('user', UserSchema);

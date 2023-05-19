@@ -4,6 +4,8 @@ const Schema = mongoose.Schema;
 const OderSchema = new Schema({
 
     totalPrice: String,
+    dayOder: String,
+    dayReturn : String,
     dateOder: Date,
     dateReturn: Date,
     numberPeople: String,
@@ -19,13 +21,13 @@ const OderSchema = new Schema({
     0. Chưa xác nhận
     1. Đã xác nhận
     2. Từ chối */
-
     status_confirm : { type: Number, default: 0 },
 
     /* Trạng thái chỗ ở
     0. Chưa ở
     1. Đang ở
-    2. Đã ở */
+    2. Đã ở 
+    3. Đã hủy*/
     status_booking : { type: Number, default: 0 },
 
     hotel : {

@@ -14,6 +14,7 @@ const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
 const { RoomFavorite }   = require('./models/room-favorite-coll');
 const { Note }          = require('./models/stickynote-coll'); 
+const { Image }         = require('./models/image-coll');
 
 var admin = require('./helper');
 
@@ -21,6 +22,20 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({}));
 app.use(cors({origin: true, credentials: true}));
+
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination(req, file, callback) {
+      callback(null, './uploads');
+    },
+    filename(req, file, callback) {
+      callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`);
+    },
+  });
+const upload = multer({ storage });
+
+app.use('/uploads', express.static('uploads'));
+
 
 app.get('/', (req, res) => {
     res.send("Welcome NodeJs");
@@ -118,6 +133,45 @@ app.get('/delete-hotel/:hotelID', async (req, res) => {
 })
 
 
+
+app.post('/upload-img', upload.array('pstay', 2), async (req, res) => {
+    let listImage = (req.files);
+    await Promise.all(listImage.map(async(item) => {
+        const newImage = new Image({
+            img: {
+                data: item.filename,
+                contentType: 'image/png',
+            }
+        })
+        let imgNew = await newImage.save();
+        res.status(200).json({message: 'success!', imgNew});
+    }))
+});
+
+app.post('/upload', upload.single('pstays'), async (req, res, next) => {
+    /* let imgNew = req.file;
+    res.status(200).json({message: 'success!', imgNew}); */
+    const newImage = new Image({
+        img: {
+            data: req.file.filename,
+            contentType: 'image/png',
+        }
+    })
+    let imgNew = await newImage.save();
+    res.status(200).json({message: 'success!', imgNew});
+  })
+
+app.get('/get-img', async (req, res) => {
+    listImg = await Image.find();
+
+    /* const binaryImage = [112,115,116,97,121,115,95,49,54,56,52,51,52,50,52,48,57,48,49,56,95,112,114,111,112,101,114,116,121,46,112,110,103]
+    const result= reader.readAsDataURL(binaryImage); */
+
+    res.json({listImg});
+});
+   
+
+
 //---------------------------------------->USER<------------------------------------
 // Đăng kí user
 app.post('/register', async( req, res) =>{
@@ -202,8 +256,8 @@ app.get('/room-favorite-by-user', async (req, res) => {
 
 // Xóa phòng yêu thích theo User
 app.post('/delete-room-favorite', async (req, res) => {
-    let { hotelID } = req.body;
-    let roomRemove = await RoomFavorite.findOneAndDelete({ hotel: hotelID });
+    let { hotel, user } = req.body;
+    let roomRemove = await RoomFavorite.findOneAndDelete({ hotel, user});
     res.json({message: 'Xóa thành công', roomRemove: roomRemove});
 })
 
@@ -212,8 +266,8 @@ app.post('/delete-room-favorite', async (req, res) => {
 //Thêm đơn đặt phòng
 app.post('/add-oder', async (req, res) => {
     try {
-        let { totalPrice, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user } = req.body;
-        let newOder = new Oder({ totalPrice, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user });
+        let { totalPrice, dayOder, dayReturn, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user } = req.body;
+        let newOder = new Oder({ totalPrice, dayOder, dayReturn, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user });
         let oderAfterSave = await newOder.save();
         if(oderAfterSave){
             res.json({message: 'Thêm thành công', data: oderAfterSave})
@@ -377,7 +431,7 @@ app.get('/list-note', async (req, res) => {
 
 
 
-
+mongoose.set("strictQuery", false);
 mongoose.connect(uri);
 mongoose.connection.once('open', () => {
     console.log(`mongo client connected`)
