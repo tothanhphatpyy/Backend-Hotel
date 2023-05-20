@@ -76,19 +76,31 @@ app.get('/delete-location/:locationID', async (req, res) => {
 
 //---------------------------------------->HOTEL<------------------------------------
 //Thêm data hotel
-app.post('/add-hotel', async (req, res) => {
+app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
+    
     try {
-      let { location, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
-            numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules  } = req.body;
-      let newHotel = new Hotel({ location, type, nameRoom, img, detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
-                                 numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules });
-      let hotelAfterSave = await newHotel.save();
-      res.json(hotelAfterSave)
+        let data_file = req.files;
+        let imgHotel = [];
+        data_file.map(async(item) => {
+            imgHotel.push(`/${item.path}`);
+        });
+        let data_body = req.body;
+        const dataHotel = JSON.parse(data_body.dataHotel);
+        let { 
+            user, location, nameRoom, type, detailLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status
+        } = dataHotel;
+        
+        let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
+                                 numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status });
+        let hotelAfterSave = await newHotel.save();
+        console.log(hotelAfterSave);
+        res.status(200).json({message: 'success!', hotelAfterSave});
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(400).json({message: error.message});
     }
-   
-})
+    
+});
+
 
 //Lấy danh sách hotel, lấy theo id : '/list-hotel?hotelID=" " '
 app.get('/list-hotel', async (req, res) => {
@@ -134,30 +146,6 @@ app.get('/delete-hotel/:hotelID', async (req, res) => {
 
 
 
-app.post('/upload-img', upload.array('pstay', 4), async (req, res) => {
-    
-    try {
-        let data_file = req.files;
-        let imgHotel = [];
-        data_file.map(async(item) => {
-            imgHotel.push(`/${item.path}`);
-        });
-        let data_body = req.body;
-        const dataHotel = JSON.parse(data_body.dataHotel);
-        let { 
-            user, location, nameRoom, type, detailLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules  
-        } = dataHotel;
-        
-        let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
-                                 numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules });
-        let hotelAfterSave = await newHotel.save();
-        console.log(hotelAfterSave);
-        res.status(200).json({message: 'success!', data_body});
-    } catch (error) {
-        res.status(400).json({message: error.message});
-    }
-    
-});
 
 app.post('/upload', upload.single('pstays'), async (req, res) => {
     
