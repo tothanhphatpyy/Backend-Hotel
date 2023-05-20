@@ -14,7 +14,6 @@ const { User }          = require('./models/user-coll');
 const { Oder}           = require('./models/oder-coll');
 const { RoomFavorite }   = require('./models/room-favorite-coll');
 const { Note }          = require('./models/stickynote-coll'); 
-const { Image }         = require('./models/image-coll');
 
 var admin = require('./helper');
 
@@ -22,6 +21,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({}));
 app.use(cors({origin: true, credentials: true}));
+app.use(express.urlencoded({extended: true}));
 
 const multer = require('multer');
 const storage = multer.diskStorage({
@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
       callback(null, './uploads');
     },
     filename(req, file, callback) {
-      callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`);
+      callback(null, `pstay_${Date.now()}_${file.originalname}`);
     },
   });
 const upload = multer({ storage });
@@ -134,42 +134,43 @@ app.get('/delete-hotel/:hotelID', async (req, res) => {
 
 
 
-app.post('/upload-img', upload.array('pstay', 2), async (req, res) => {
-    let listImage = (req.files);
-    await Promise.all(listImage.map(async(item) => {
-        const newImage = new Image({
-            img: {
-                data: item.filename,
-                contentType: 'image/png',
-            }
-        })
-        let imgNew = await newImage.save();
-        res.status(200).json({message: 'success!', imgNew});
-    }))
+app.post('/upload-img', upload.array('pstay', 4), async (req, res) => {
+    
+    try {
+        let data_file = req.files;
+        let imgHotel = [];
+        data_file.map(async(item) => {
+            imgHotel.push(`/${item.path}`);
+        });
+        let data_body = req.body;
+        const dataHotel = JSON.parse(data_body.dataHotel);
+        let { 
+            user, location, nameRoom, type, detailLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules  
+        } = dataHotel;
+        
+        let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
+                                 numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules });
+        let hotelAfterSave = await newHotel.save();
+        console.log(hotelAfterSave);
+        res.status(200).json({message: 'success!', data_body});
+    } catch (error) {
+        res.status(400).json({message: error.message});
+    }
+    
 });
 
-app.post('/upload', upload.single('pstays'), async (req, res, next) => {
-    /* let imgNew = req.file;
-    res.status(200).json({message: 'success!', imgNew}); */
-    const newImage = new Image({
-        img: {
-            data: req.file.filename,
-            contentType: 'image/png',
-        }
-    })
-    let imgNew = await newImage.save();
-    res.status(200).json({message: 'success!', imgNew});
-  })
+app.post('/upload', upload.single('pstays'), async (req, res) => {
+    
+    let data_file = req.file;
+    let data_body = req.body;
+    console.log({data_file, data_body});
+    try {
+        res.json({data_file, data_body});
+    } catch (error) {
+        res.status(400).json({message: error.message});
+    }
 
-app.get('/get-img', async (req, res) => {
-    listImg = await Image.find();
-
-    /* const binaryImage = [112,115,116,97,121,115,95,49,54,56,52,51,52,50,52,48,57,48,49,56,95,112,114,111,112,101,114,116,121,46,112,110,103]
-    const result= reader.readAsDataURL(binaryImage); */
-
-    res.json({listImg});
-});
-   
+})
 
 
 //---------------------------------------->USER<------------------------------------

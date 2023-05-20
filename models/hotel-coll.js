@@ -5,7 +5,10 @@ const HotelSchema = new Schema({
 
     type: String,
     nameRoom: String,
-    img: String,
+    imgDetail0: String,
+    imgDetail1: String,
+    imgDetail2: String,
+    imgDetail3: String,
     detailLocation : String,
 
     typeRoom: String,
@@ -19,6 +22,7 @@ const HotelSchema = new Schema({
     priceDiscount: String,
     detailRules: String,
     
+    status : { type: Number, default: 0 },   // 0.draft, 1.active , 2.rejected
 
     location : { 
         type: Schema.Types.ObjectId,
