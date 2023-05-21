@@ -48,13 +48,20 @@ app.get('/', (req, res) => {
 app.post('/add-location', async (req, res) => {
     try {
         let { name, image } = req.body;
-        let newLocation = new Location({ name, image });
-        let locationAfterSave = await newLocation.save();
-        if(locationAfterSave){
-            res.json({message: 'Thêm thành công', data: locationAfterSave})
-        }else{
-            res.json({message: 'Thêm thất bại'})
+        let location = await Location.find({ name });
+        if(!location.length){
+            let newLocation = new Location({ name, image });
+            let locationAfterSave = await newLocation.save();
+            console.log(locationAfterSave);
+            if(locationAfterSave){
+                res.json({message: 'Thêm thành công', data: locationAfterSave})
+            }else{
+                res.json({message: 'Thêm thất bại'})
+            }
         }
+        else
+        res.json({message: 'Đã có trong danh sách', data: location})
+        
     } catch (e) {
         res.json({message: 'Thêm thất bại'})
     }
@@ -62,15 +69,31 @@ app.post('/add-location', async (req, res) => {
 
 //Lấy danh sách địa danh
 app.get('/location', async (req, res) => {
+    try {
     let listLocation = await Location.find();
     let result = listLocation.map(item => item.name)
     res.json(listLocation);
+    } catch (e) {
+        res.json({message: e.message})
+    }
+})
+
+//Cập nhật địa danh 
+app.post('/update-location', async (req, res) => {
+    try {
+        let { name, image } = req.body;
+        let location = await Location.find({ name });
+        let locationUpdate = await Location.findByIdAndUpdate(location[0]._id, {image}/* , {new : true} */);
+        res.json(locationUpdate);
+    } catch (e) {
+        res.json({message: e.message})
+    }
 })
 
 //Xóa địa danh
 app.get('/delete-location/:locationID', async (req, res) => {
     let { locationID } = req.params;
-    let locationRemove = await Location.findByIdAndDelete({ _id: locationID });
+    let locationRemove = await Location.findByIdAndUpdate({ _id: locationID });
     res.json({message: 'Xóa thành công', locationRemove: locationRemove});
 })
 
