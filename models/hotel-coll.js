@@ -9,8 +9,8 @@ const HotelSchema = new Schema({
     imgDetail1: String,
     imgDetail2: String,
     imgDetail3: String,
-    detailLocation : String,
-
+    detailLocation: String,
+    districtLocation: String,
     typeRoom: String,
     numberBedRoom: String,
     numberBathRoom: String,

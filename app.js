@@ -110,10 +110,10 @@ app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
         let data_body = req.body;
         const dataHotel = JSON.parse(data_body.dataHotel);
         let { 
-            user, location, nameRoom, type, detailLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status
+            user, location, nameRoom, type, detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status,
         } = dataHotel;
         
-        let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, typeRoom, numberBedRoom, numberBathRoom, 
+        let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, 
                                  numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status });
         let hotelAfterSave = await newHotel.save();
         console.log(hotelAfterSave);
