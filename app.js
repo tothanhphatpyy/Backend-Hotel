@@ -103,7 +103,8 @@ app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
     
     try {
         let data_file = req.files;
-        let imgHotel = [];
+        console.log(data_file);
+       /*  let imgHotel = [];
         data_file.map(async(item) => {
             imgHotel.push(`/${item.path}`);
         });
@@ -116,7 +117,7 @@ app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
         let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, 
                                  numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status });
         let hotelAfterSave = await newHotel.save();
-        console.log(hotelAfterSave);
+        console.log(hotelAfterSave); */
         res.status(200).json({message: 'success!', hotelAfterSave});
     } catch (error) {
         res.status(400).json({message: error.message});
