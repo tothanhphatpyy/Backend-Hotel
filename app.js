@@ -205,8 +205,8 @@ app.post('/register', async (req, res) => {
 
 // Đăng nhập user
 app.post('/login', async (req, res) => {
-    let { username, password } = req.body;
-    const infoUser = await User.findOne({ username });
+    let { sdt, password } = req.body;
+    const infoUser = await User.findOne({ sdt });
     if (!infoUser)
         return res.status(404).json({ message: 'Tài khoản không tồn tại' });
     const checkPass = await compare(password, infoUser.password);
@@ -215,7 +215,7 @@ app.post('/login', async (req, res) => {
 
     if (infoUser && checkPass) {
         const accessToken = sign({
-            username: infoUser.username,
+            sdt: infoUser.sdt,
             name: infoUser.name,
             email: infoUser.email,
             role: infoUser.role,
@@ -384,8 +384,8 @@ app.get('/notification', async (req, res) => {
 //Check tài khoản đã tồn tại chưa
 app.post('/check-user', async (req, res) => {
     try {
-        let { username } = req.body;
-        let result = await User.findOne({ username });
+        let { sdt } = req.body;
+        let result = await User.findOne({ sdt });
         res.json(result);
     } catch (error) {
         res.json({ error: error.message });
@@ -395,9 +395,9 @@ app.post('/check-user', async (req, res) => {
 //Đặt lại password theo SDT
 app.post('/forgot-password', async (req, res) => {
     try {
-        let { username, password } = req.body;
+        let { sdt, password } = req.body;
         const hashedPassword = await hash(password, 8);
-        let result = await User.findOne({ username });
+        let result = await User.findOne({ sdt });
         let newUserUpdate = await User.findByIdAndUpdate(result.id, { password: hashedPassword });
         res.json(newUserUpdate);
     } catch (error) {
