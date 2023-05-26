@@ -11,7 +11,7 @@ const UserSchema = new Schema({
     response_rate: { type: Number, default: 0 }, // Tỉ lệ phản hồi
     cancellation_rate: { type: Number, default: 0 }, // Tỉ lệ hủy phòng
 
-    role: { type: Number, default: 1 },/* 0. Admin 1. User 2. Owner */
+    role: { type: Number, default: 0 },/* 0. Admin 1. Owner 2. User */
 
     //Trạng thái hoạt động
     status: { type: Number, default: 1 } /* 0. Inactive, 1. Active 2. Blocked */
