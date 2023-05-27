@@ -239,6 +239,7 @@ app.get('/list-user', async (req, res) => {
     }
 })
 
+/* ---------------------------------FAVORITE-ROOM--------------------------- */
 // Thêm danh sách phòng yêu thích theo User
 app.post('/add-room-favorite', async (req, res) => {
     try {
@@ -351,6 +352,16 @@ app.post('/search', async (req, res) => {
     }
 })
 
+//---------------------------------------->HOTEL_BY_OWNER<------------------------------------
+app.get('/list-hotel/:userID', async (req, res) => {
+    try {
+        let { userID } = req.params;
+        let listHotel = await Hotel.find({ user: userID });
+        res.json(listHotel);
+    } catch (e) {
+        res.json({ error: e.message });
+    }
+})
 
 
 
