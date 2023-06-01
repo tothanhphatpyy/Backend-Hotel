@@ -41,6 +41,8 @@ app.get('/', (req, res) => {
     res.send("Welcome NodeJs");
 })
 
+const PORT = process.env.PORT || 3000;
+
 
 
 //---------------------------------------->LOCATION<------------------------------------
@@ -99,11 +101,10 @@ app.get('/delete-location/:locationID', async (req, res) => {
 
 //---------------------------------------->HOTEL<------------------------------------
 //Thêm data hotel
-/* app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
+app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
 
     try {
         let data_file = req.files;
-        console.log(data_file);
          let imgHotel = [];
          data_file.map(async(item) => {
              imgHotel.push(`/${item.path}`);
@@ -113,28 +114,28 @@ app.get('/delete-location/:locationID', async (req, res) => {
          let { 
              user, location, nameRoom, type, detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status,
          } = dataHotel;
-         
-         let newHotel = new Hotel({ user, location, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, 
+         let getLocationByName = await Location.findOne({name : location});
+         let newHotel = new Hotel({ user, location: getLocationByName._id, type, nameRoom, imgDetail0 : imgHotel[0], imgDetail1 : imgHotel[1], imgDetail2 : imgHotel[2], imgDetail3 : imgHotel[3], detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom, 
                                   numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status });
          let hotelAfterSave = await newHotel.save();
-         console.log(hotelAfterSave);
+         
         res.status(200).json({ message: 'success!', hotelAfterSave });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 
-}); */
+});
 
 app.post('/add-hotel', async (req, res) => {
     try {
         let {
             user, location, type, nameRoom, imgDetail0, imgDetail1, imgDetail2, imgDetail3, detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom,
-            numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status
+            numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, numberBooking, status
         } = req.body;
 
         let newHotel = new Hotel({
             user, location, type, nameRoom, imgDetail0, imgDetail1, imgDetail2, imgDetail3, detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom,
-            numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, status
+            numberBed, numberPeople, detailRoom, priceMon_Fri, priceWeb_Sun, priceDiscount, detailRules, numberBooking, status
         });
         let hotelAfterSave = await newHotel.save();
         res.status(200).json({ message: 'success!', hotelAfterSave });
@@ -301,6 +302,7 @@ app.post('/add-oder', async (req, res) => {
         let { totalPrice, dayOder, dayReturn, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user } = req.body;
         let newOder = new Oder({ totalPrice, dayOder, dayReturn, dateOder, dateReturn, numberPeople, numberChildren, status_booking, status_payment, status_confirm, hotel, user });
         let oderAfterSave = await newOder.save();
+
         if (oderAfterSave) {
             res.json({ message: 'Thêm thành công', data: oderAfterSave })
         } else {
@@ -477,7 +479,7 @@ mongoose.set("strictQuery", false);
 mongoose.connect(uri);
 mongoose.connection.once('open', () => {
     console.log(`mongo client connected`)
-    app.listen(process.env.PORT || 3000, () => console.log(`server started at port 3000`));
+    app.listen(PORT, () => console.log(`server started at port 3000`));
 });
 
 

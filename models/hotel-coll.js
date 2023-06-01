@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Schema   = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 const HotelSchema = new Schema({
 
@@ -21,16 +21,17 @@ const HotelSchema = new Schema({
     priceWeb_Sun: String,
     priceDiscount: String,
     detailRules: String,
-    
-    status : { type: Number, default: 0 },   // 0.draft, 1.active , 2.rejected
+    numberBooking: { type: Number, default: 0 },
 
-    location : { 
+    status: { type: Number, default: 0 },   // 0.draft, 1.active , 2.rejected
+
+    location: {
         type: Schema.Types.ObjectId,
-        ref : 'location'
+        ref: 'location'
     },
-    user : { 
+    user: {
         type: Schema.Types.ObjectId,
-        ref : 'user'
+        ref: 'user'
     },
 });
 
