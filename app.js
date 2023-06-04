@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('./uploads'));
 
 
 app.get('/', (req, res) => {
@@ -126,7 +126,7 @@ app.post('/add-hotel', upload.array('pstay', 4), async (req, res) => {
 
 });
 
-app.post('/add-hotel', async (req, res) => {
+/* app.post('/add-hotel', async (req, res) => {
     try {
         let {
             user, location, type, nameRoom, imgDetail0, imgDetail1, imgDetail2, imgDetail3, detailLocation, districtLocation, typeRoom, numberBedRoom, numberBathRoom,
@@ -143,7 +143,7 @@ app.post('/add-hotel', async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
-
+ */
 
 //Lấy danh sách hotel, lấy theo id : '/list-hotel?hotelID=" " '
 app.get('/list-hotel', async (req, res) => {
